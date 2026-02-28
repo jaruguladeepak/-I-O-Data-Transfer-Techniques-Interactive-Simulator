@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>I/O Data Transfer Techniques – Interactive Simulator</title>
+    <meta name="description"
+        content="Interactive simulation of Programmed I/O, Interrupt-Driven I/O, and DMA for Computer Architecture." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap"
+        rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+
+    <!-- ══ TOAST CONTAINER ══ -->
+    <div id="toast-container"></div>
+
+    <!-- ══ CONFETTI CANVAS ══ -->
+    <canvas id="confetti-canvas"></canvas>
+
+    <!-- ══ KEYBOARD SHORTCUTS MODAL ══ -->
+    <div class="modal-overlay" id="shortcuts-modal">
+        <div class="modal-box">
+            <div class="modal-title">⌨ Keyboard Shortcuts</div>
+            <table class="shortcuts-table">
+                <tr>
+                    <td><kbd>R</kbd></td>
+                    <td>Run Simulation</td>
+                </tr>
+                <tr>
+                    <td><kbd>S</kbd></td>
+                    <td>Step Mode</td>
+                </tr>
+                <tr>
+                    <td><kbd>Esc</kbd></td>
+                    <td>Reset</td>
+                </tr>
+                <tr>
+                    <td><kbd>D</kbd></td>
+                    <td>Toggle Dark/Light</td>
+                </tr>
+                <tr>
+                    <td><kbd>N</kbd></td>
+                    <td>Next Step (step mode)</td>
+                </tr>
+                <tr>
+                    <td><kbd>C</kbd></td>
+                    <td>Export CSV</td>
+                </tr>
+                <tr>
+                    <td><kbd>?</kbd></td>
+                    <td>This Help</td>
+                </tr>
+            </table>
+            <button class="btn btn-primary"
+                onclick="document.getElementById('shortcuts-modal').classList.remove('open')">Close</button>
+        </div>
+    </div>
+
+    <!-- ══ NAVBAR ══ -->
+    <nav class="navbar" id="navbar">
+        <div class="nav-inner">
+            <div class="nav-logo"><span class="logo-icon">⚡</span><span>I/O Techniques Simulator</span></div>
+            <div class="nav-links">
+                <a href="#hero">Home</a>
+                <a href="#theory">Theory</a>
+                <a href="#flowcharts">Flowcharts</a>
+                <a href="#simulator">Simulator</a>
+                <a href="#results">Results</a>
+                <a href="#viva">Viva Guide</a>
+            </div>
+            <div class="nav-actions">
+                <button class="icon-btn" id="share-btn" title="Share URL">🔗</button>
+                <button class="icon-btn" id="shortcuts-btn" title="Keyboard shortcuts (?)">⌨</button>
+                <button class="icon-btn" id="theme-toggle" title="Toggle theme">🌙</button>
+                <a href="#simulator" class="btn btn-primary btn-sm">Try Now</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ══ HERO ══ -->
+    <section id="hero" class="hero">
+        <canvas id="particles-canvas"></canvas>
+        <div class="hero-content">
+            <div class="badge fade-in">📚 Computer Architecture Project</div>
+            <h1 class="fade-in delay-1">I/O Data Transfer<br /><span class="gradient-text">Techniques</span></h1>
+            <p class="hero-sub fade-in delay-2">
+                Implementation &amp; Evaluation of <strong>Programmed I/O</strong>, <strong>Interrupt-Driven
+                    I/O</strong>, and <strong>DMA</strong>
+                — simulating a <strong>1 MB disk read</strong> with cycle-accurate metrics.
+            </p>
+            <div class="hero-btns fade-in delay-3">
+                <a href="#simulator" class="btn btn-primary btn-lg">🚀 Launch Simulator</a>
+                <a href="#theory" class="btn btn-outline btn-lg">📖 Learn Theory</a>
+            </div>
+            <div class="hero-chips fade-in delay-3">
+                <span class="chip chip-poll">🔄 Programmed I/O</span>
+                <span class="chip chip-int">⚡ Interrupt-Driven</span>
+                <span class="chip chip-dma">🚀 DMA</span>
+            </div>
+            <div class="hero-stats fade-in delay-4">
+                <div class="stat-pill"><span class="stat-val" id="anim-cpu">100%</span><span class="stat-lbl">Polling
+                        CPU Use</span></div>
+                <div class="stat-pill"><span class="stat-val">&lt;1%</span><span class="stat-lbl">DMA CPU Use</span>
+                </div>
+                <div class="stat-pill"><span class="stat-val" id="anim-blocks">2048</span><span class="stat-lbl">Blocks
+                        (1 MB)</span></div>
+                <div class="stat-pill"><span class="stat-val">1×</span><span class="stat-lbl">DMA Interrupt</span></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ══ THEORY ══ -->
+    <section id="theory" class="section">
+        <div class="container">
+            <div class="section-header">
+                <div class="section-badge">Core Concepts</div>
+                <h2 class="section-title">How Each Technique Works</h2>
+                <p class="section-sub">Three fundamentally different approaches — same hardware, wildly different CPU
+                    utilization.</p>
+            </div>
+            <div class="cards-3">
+                <div class="card card-poll reveal">
+                    <div class="card-header">
+                        <div class="card-icon">🔄</div>
+                        <div>
+                            <h3>Programmed I/O</h3><small>Polling / Busy-wait</small>
+                        </div>
+                    </div>
+                    <p>The CPU continuously reads the device status register in a tight loop until it signals READY.
+                        Every CPU cycle is "wasted" — <em>zero</em> other work is possible.</p>
+                    <ul>
+                        <li>CPU utilization: <strong>100%</strong></li>
+                        <li>Zero interrupt overhead</li>
+                        <li>Simple hardware</li>
+                        <li>Worst for large transfers</li>
+                    </ul>
+                    <div class="formula">Overhead = N_blocks × Poll_Check_Cycles<br />CPU Util = <strong>100%</strong>
+                    </div>
+                    <div class="perf-badge perf-bad">⚠ Poor CPU Efficiency</div>
+                </div>
+                <div class="card card-int reveal">
+                    <div class="card-header">
+                        <div class="card-icon">⚡</div>
+                        <div>
+                            <h3>Interrupt-Driven I/O</h3><small>Event-driven ISR</small>
+                        </div>
+                    </div>
+                    <p>CPU issues a read command and switches to other tasks. The device fires an <em>interrupt</em>
+                        when each block is ready; CPU handles the ISR, then resumes.</p>
+                    <ul>
+                        <li>CPU freed between transfers</li>
+                        <li>ISR overhead per block</li>
+                        <li>Good for moderate data</li>
+                        <li>N interrupts for N blocks</li>
+                    </ul>
+                    <div class="formula">ISR Cost = N × (Entry + Body + Exit)<br />CPU Util ≈ <strong>ISR fraction
+                            only</strong></div>
+                    <div class="perf-badge perf-ok">✓ Good CPU Efficiency</div>
+                </div>
+                <div class="card card-dma reveal">
+                    <div class="card-header">
+                        <div class="card-icon">🚀</div>
+                        <div>
+                            <h3>Direct Memory Access</h3><small>Bus-Mastering DMA</small>
+                        </div>
+                    </div>
+                    <p>CPU programs the DMA controller (source, destination, count) then is <em>completely free</em>.
+                        DMA moves all data autonomously and fires <strong>one</strong> completion interrupt.</p>
+                    <ul>
+                        <li>CPU utilization: <strong>~0%</strong></li>
+                        <li>Single completion interrupt</li>
+                        <li>Best for large transfers</li>
+                        <li>Fixed setup cost</li>
+                    </ul>
+                    <div class="formula">Overhead = DMA_Setup + Completion_IRQ<br />CPU Util ≈ <strong>~0%</strong>
+                    </div>
+                    <div class="perf-badge perf-best">🏆 Best CPU Efficiency</div>
+                </div>
+            </div>
+            <!-- Quick compare table -->
+            <div class="compare-table reveal">
+                <div class="compare-title">⚡ Quick Comparison</div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Criteria</th>
+                            <th class="poll-h">Programmed I/O</th>
+                            <th class="int-h">Interrupt I/O</th>
+                            <th class="dma-h">DMA</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>CPU while transferring</td>
+                            <td class="bad">100% busy</td>
+                            <td class="ok">Idle (ISR only)</td>
+                            <td class="best">~0% busy</td>
+                        </tr>
+                        <tr>
+                            <td>Interrupts per 1 MB</td>
+                            <td class="neutral">0</td>
+                            <td class="warn">2,048</td>
+                            <td class="best">1</td>
+                        </tr>
+                        <tr>
+                            <td>Hardware needed</td>
+                            <td class="best">Minimal</td>
+                            <td class="ok">Int. Controller</td>
+                            <td class="warn">DMA Controller</td>
+                        </tr>
+                        <tr>
+                            <td>Best for</td>
+                            <td>Tiny transfers</td>
+                            <td>Medium data</td>
+                            <td class="best">Large data</td>
+                        </tr>
+                        <tr>
+                            <td>Overhead type</td>
+                            <td class="bad">Linear (polls)</td>
+                            <td class="warn">Linear (ISRs)</td>
+                            <td class="best">Fixed (setup)</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <!-- ══ ALGORITHM FLOWCHARTS ══ -->
+    <section id="flowcharts" class="section section-alt">
+        <div class="container">
+            <div class="section-header">
+                <div class="section-badge">Algorithms</div>
+                <h2 class="section-title">Algorithm Flowcharts</h2>
+                <p class="section-sub">Step-by-step decision flow for each I/O technique.</p>
+            </div>
+            <div class="flowcharts-row">
+
+                <!-- Polling Flowchart -->
+                <div class="flowchart-panel fc-poll reveal">
+                    <div class="fc-title">Programmed I/O</div>
+                    <div class="fc-body">
+                        <div class="fc-node fc-terminal">START</div>
+                        <div class="fc-arrow">↓</div>
+                        <div class="fc-node fc-process">CPU issues read command</div>
+                        <div class="fc-arrow">↓</div>
+                        <div class="fc-node fc-decision">Device READY?</div>
+                        <div class="fc-branch">
+                            <div class="fc-no">NO → Poll again<br /><span class="fc-cost">Cost: 4 cycles</span></div>
+                            <div class="fc-yes">YES ↓</div>
+                        </div>
+                        <div class="fc-node fc-process">CPU copies data to memory</div>
+                        <div class="fc-arrow">↓</div>
+                        <div class="fc-node fc-decision">All blocks done?</div>
+                        <div class="fc-branch">
+                            <div class="fc-no">NO → Read next</div>
+                            <div class="fc-yes">YES ↓</div>
+                        </div>
+                        <div class="fc-node fc-terminal">DONE</div>
+                    </div>
+                    <div class="fc-stats"><span class="fc-stat fc-stat-bad">CPU Busy: 100%</span><span
+                            class="fc-stat">IRQs: 0</span></div>
+                </div>
+
+                <!-- Interrupt Flowchart -->
+                <div class="flowchart-panel fc-int reveal">
+                    <div class="fc-title">Interrupt-Driven I/O</div>
+                    <div class="fc-body">
+                        <div class="fc-node fc-terminal">START</div>
+                        <div class="fc-arrow">↓</div>
+                        <div class="fc-node fc-process">CPU starts read, <strong>resumes work</strong></div>
+                        <div class="fc-arrow">↓</div>
+                        <div class="fc-node fc-process fc-idle">CPU runs other tasks (IDLE)</div>
+                        <div class="fc-arrow">↓</div>
+                        <div class="fc-node fc-decision">Interrupt signal?</div>
+                        <div class="fc-branch">
+                            <div class="fc-no">NO → Keep running</div>
+                            <div class="fc-yes">YES ↓</div>
+                        </div>
+                        <div class="fc-node fc-isr">ISR: save ctx → copy block → restore ctx<br /><span
+                                class="fc-cost">Cost: 250 cycles</span></div>
+                        <div class="fc-arrow">↓</div>
+                        <div class="fc-node fc-decision">All blocks done?</div>
+                        <div class="fc-branch">
+                            <div class="fc-no">NO → Next block</div>
+                            <div class="fc-yes">YES ↓</div>
+                        </div>
+                        <div class="fc-node fc-terminal">DONE</div>
+                    </div>
+                    <div class="fc-stats"><span class="fc-stat fc-stat-ok">CPU Busy: ~4%</span><span
+                            class="fc-stat">IRQs: N</span></div>
+                </div>
+
+                <!-- DMA Flowchart -->
+                <div class="flowchart-panel fc-dma reveal">
+                    <div class="fc-title">DMA Transfer</div>
+                    <div class="fc-body">
+                        <div class="fc-node fc-terminal">START</div>
+                        <div class="fc-arrow">↓</div>
+                        <div class="fc-node fc-process">CPU programs DMA controller<br /><span class="fc-cost">Cost: 500
+                                cycles</span></div>
+                        <div class="fc-arrow">↓</div>
+                        <div class="fc-node fc-process fc-dma-active">DMA takes bus mastership</div>
+                        <div class="fc-arrow">↓</div>
+                        <div class="fc-node fc-process fc-idle">CPU completely free — runs other work</div>
+                        <div class="fc-arrow">↓</div>
+                        <div class="fc-node fc-parallel">
+                            <div>DMA transfers all N blocks autonomously</div>
+                            <div class="fc-arrow-small">↓</div>
+                            <div>Disk → Memory (no CPU involvement)</div>
+                        </div>
+                        <div class="fc-arrow">↓</div>
+                        <div class="fc-node fc-isr">Completion IRQ → CPU handles<br /><span class="fc-cost">Cost: 100
+                                cycles</span></div>
+                        <div class="fc-arrow">↓</div>
+                        <div class="fc-node fc-terminal">DONE</div>
+                    </div>
+                    <div class="fc-stats"><span class="fc-stat fc-stat-best">CPU Busy: ~0%</span><span
+                            class="fc-stat">IRQs: 1</span></div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- ══ SIMULATOR ══ -->
+    <section id="simulator" class="section">
+        <div class="container">
+            <div class="section-header">
+                <div class="section-badge">Live Demo</div>
+                <h2 class="section-title">Interactive Simulator</h2>
+                <p class="section-sub">Configure and watch all three techniques execute in real time.</p>
+            </div>
+
+            <!-- Config Panel -->
+            <div class="config-panel reveal">
+                <div class="config-title">⚙ Simulation Parameters</div>
+                <div class="config-grid">
+                    <div class="config-item">
+                        <label>File Size</label>
+                        <select id="cfg-size">
+                            <option value="1024">1 KB</option>
+                            <option value="4096">4 KB</option>
+                            <option value="16384">16 KB</option>
+                            <option value="65536">64 KB</option>
+                            <option value="262144" selected>256 KB</option>
+                            <option value="1048576">1 MB</option>
+                        </select>
+                    </div>
+                    <div class="config-item">
+                        <label>Block Size</label>
+                        <select id="cfg-block">
+                            <option value="64">64 B</option>
+                            <option value="128">128 B</option>
+                            <option value="256">256 B</option>
+                            <option value="512" selected>512 B</option>
+                            <option value="1024">1 KB</option>
+                            <option value="4096">4 KB</option>
+                        </select>
+                    </div>
+                    <div class="config-item">
+                        <label>CPU Speed</label>
+                        <select id="cfg-cpu">
+                            <option value="1000000000">1.0 GHz</option>
+                            <option value="2000000000" selected>2.0 GHz</option>
+                            <option value="3000000000">3.0 GHz</option>
+                            <option value="4000000000">4.0 GHz</option>
+                        </select>
+                    </div>
+                    <div class="config-item">
+                        <label>Device Speed</label>
+                        <select id="cfg-dev">
+                            <option value="10000000">10 MB/s</option>
+                            <option value="50000000" selected>50 MB/s</option>
+                            <option value="100000000">100 MB/s</option>
+                            <option value="500000000">500 MB/s</option>
+                        </select>
+                    </div>
+                    <div class="config-item">
+                        <label>ISR Overhead (cy/block)</label>
+                        <input type="number" id="cfg-isr" value="250" min="50" max="5000" step="50" />
+                    </div>
+                    <div class="config-item">
+                        <label>DMA Setup (cycles)</label>
+                        <input type="number" id="cfg-dma-setup" value="500" min="100" max="10000" step="100" />
+                    </div>
+                </div>
+                <div class="config-footer">
+                    <div class="speed-control">
+                        <label>⚡ Speed</label>
+                        <input type="range" id="cfg-speed" min="1" max="5" value="3" step="1" />
+                        <span id="speed-label">Normal</span>
+                    </div>
+                    <div class="sim-btns">
+                        <button class="btn btn-primary" id="btn-run">▶ Run</button>
+                        <button class="btn btn-outline" id="btn-step">⏭ Step</button>
+                        <button class="btn btn-warn" id="btn-reset">↺ Reset</button>
+                        <button class="btn btn-success" id="btn-export-csv">⬇ CSV</button>
+                        <button class="btn btn-outline" id="btn-share">🔗 Share</button>
+                        <button class="btn btn-outline" id="btn-help">⌨ Keys</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step Mode Banner -->
+            <div class="step-banner" id="step-banner" style="display:none">
+                <span>Step Mode — Block <strong id="step-cur">0</strong> of <strong id="step-total">—</strong></span>
+                <button class="btn btn-primary btn-sm" id="btn-next-step">Next ▶</button>
+                <button class="btn btn-outline btn-sm" id="btn-exit-step">Exit Step Mode</button>
+            </div>
+
+            <!-- Architecture Panels + Memory Grid -->
+            <div class="arch-row reveal">
+                <div class="arch-panel poll-panel">
+                    <div class="arch-topbar"><span class="arch-label">Programmed I/O</span><span class="arch-badge"
+                            id="badge-poll">IDLE</span></div>
+                    <canvas id="arch-poll" width="380" height="190"></canvas>
+                    <canvas id="mem-poll" class="mem-canvas" width="160" height="80"
+                        title="Memory fill heatmap"></canvas>
+                    <div class="progress-wrap">
+                        <div class="progress-bar" id="bar-poll"></div>
+                    </div>
+                    <div class="arch-stat" id="stat-poll">CPU: — | Blocks: — | Throughput: —</div>
+                    <div class="irq-counter" id="irq-poll">IRQs: 0</div>
+                </div>
+                <div class="arch-panel int-panel">
+                    <div class="arch-topbar"><span class="arch-label">Interrupt-Driven I/O</span><span
+                            class="arch-badge" id="badge-int">IDLE</span></div>
+                    <canvas id="arch-int" width="380" height="190"></canvas>
+                    <canvas id="mem-int" class="mem-canvas" width="160" height="80"
+                        title="Memory fill heatmap"></canvas>
+                    <div class="progress-wrap">
+                        <div class="progress-bar" id="bar-int"></div>
+                    </div>
+                    <div class="arch-stat" id="stat-int">CPU: — | IRQs: — | Throughput: —</div>
+                    <div class="irq-counter" id="irq-int">IRQs: <span id="irq-int-val">0</span> <span class="irq-flash"
+                            id="irq-flash-int"></span></div>
+                </div>
+                <div class="arch-panel dma-panel">
+                    <div class="arch-topbar"><span class="arch-label">DMA</span><span class="arch-badge"
+                            id="badge-dma">IDLE</span></div>
+                    <canvas id="arch-dma" width="380" height="190"></canvas>
+                    <canvas id="mem-dma" class="mem-canvas" width="160" height="80"
+                        title="Memory fill heatmap"></canvas>
+                    <div class="progress-wrap">
+                        <div class="progress-bar" id="bar-dma"></div>
+                    </div>
+                    <div class="arch-stat" id="stat-dma">CPU: — | IRQs: 1 | Throughput: —</div>
+                    <div class="irq-counter" id="irq-dma">IRQs: <span id="irq-dma-val">0</span></div>
+                </div>
+            </div>
+
+            <!-- Oscilloscope Waveform -->
+            <div class="osc-panel reveal">
+                <div class="osc-title">📡 CPU Activity Waveform (Oscilloscope)</div>
+                <div class="osc-legend">
+                    <span class="osc-leg poll-leg">▬ Polling</span>
+                    <span class="osc-leg int-leg">▬ Interrupt</span>
+                    <span class="osc-leg dma-leg">▬ DMA</span>
+                    <span class="osc-note">HIGH = CPU Busy · LOW = CPU Idle</span>
+                </div>
+                <canvas id="osc-canvas" height="120"></canvas>
+            </div>
+
+            <!-- Event Log -->
+            <div class="event-log-panel reveal">
+                <div class="log-header">
+                    <div class="log-title">📋 Simulation Event Log</div>
+                    <div class="log-actions">
+                        <button class="btn btn-outline btn-sm" id="btn-clear-log">Clear</button>
+                        <button class="btn btn-outline btn-sm" id="btn-copy-log">Copy Log</button>
+                    </div>
+                </div>
+                <div class="log-body" id="event-log">
+                    <div class="log-empty">Run the simulation to see events here…</div>
+                </div>
+            </div>
+
+            <!-- Charts Grid (6 charts) -->
+            <div class="charts-grid">
+                <div class="chart-card reveal">
+                    <div class="chart-topbar">
+                        <h4>📊 CPU Utilization (%)</h4><button class="fullscreen-btn" data-chart="cpu">⛶</button>
+                    </div><canvas id="chart-cpu"></canvas>
+                </div>
+                <div class="chart-card reveal">
+                    <div class="chart-topbar">
+                        <h4>📈 Throughput (MB/s)</h4><button class="fullscreen-btn" data-chart="tp">⛶</button>
+                    </div><canvas id="chart-tp"></canvas>
+                </div>
+                <div class="chart-card reveal">
+                    <div class="chart-topbar">
+                        <h4>📦 Transfer Progress</h4><button class="fullscreen-btn" data-chart="prog">⛶</button>
+                    </div><canvas id="chart-prog"></canvas>
+                </div>
+                <div class="chart-card reveal">
+                    <div class="chart-topbar">
+                        <h4>⚖ Break-Even Analysis</h4><button class="fullscreen-btn" data-chart="be">⛶</button>
+                    </div><canvas id="chart-be"></canvas>
+                </div>
+                <div class="chart-card reveal">
+                    <div class="chart-topbar">
+                        <h4>📊 CPU Gantt Chart</h4><button class="fullscreen-btn" data-chart="gantt">⛶</button>
+                    </div><canvas id="chart-gantt"></canvas>
+                </div>
+                <div class="chart-card reveal">
+                    <div class="chart-topbar">
+                        <h4>🥧 Overhead Breakdown</h4><button class="fullscreen-btn" data-chart="pie">⛶</button>
+                    </div><canvas id="chart-pie"></canvas>
+                </div>
+            </div>
+
+            <!-- Fullscreen overlay -->
+            <div class="fullscreen-overlay" id="fullscreen-overlay">
+                <div class="fullscreen-box">
+                    <button class="fullscreen-close" id="fullscreen-close">✕ Close</button>
+                    <canvas id="chart-fullscreen"></canvas>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ══ RESULTS ══ -->
+    <section id="results" class="section section-alt" style="display:none">
+        <div class="container">
+            <div class="section-header">
+                <div class="section-badge">Analysis</div>
+                <h2 class="section-title">Simulation Results</h2>
+            </div>
+
+            <!-- Score Cards -->
+            <div class="score-cards" id="score-cards"></div>
+
+            <!-- Stats Summary -->
+            <div class="stats-row" id="stats-row"></div>
+
+            <!-- Results Table -->
+            <div class="table-wrap reveal">
+                <table class="results-table">
+                    <thead>
+                        <tr>
+                            <th>Metric</th>
+                            <th class="poll-h">Programmed I/O</th>
+                            <th class="int-h">Interrupt-Driven</th>
+                            <th class="dma-h">DMA</th>
+                        </tr>
+                    </thead>
+                    <tbody id="results-body"></tbody>
+                </table>
+            </div>
+
+            <!-- Key Findings -->
+            <div class="findings-grid" id="key-findings"></div>
+
+            <!-- Dual Charts -->
+            <div class="dual-charts">
+                <div class="chart-card reveal">
+                    <h4>🕸 Radar Comparison</h4><canvas id="chart-radar"></canvas>
+                </div>
+                <div class="chart-card reveal">
+                    <h4>📊 Final Comparison</h4><canvas id="chart-final"></canvas>
+                </div>
+            </div>
+
+            <!-- Break-Even -->
+            <div class="breakeven-box reveal" id="breakeven-box"></div>
+
+            <!-- Min/Max/Avg Stats -->
+            <div class="minmax-panel reveal" id="minmax-panel"></div>
+
+            <!-- Export row -->
+            <div class="export-row">
+                <button class="btn btn-success" id="btn-export-csv2">⬇ Export CSV</button>
+                <button class="btn btn-primary" id="btn-export-json">{ } Export JSON</button>
+                <button class="btn btn-outline" onclick="window.print()">🖨 Print Report</button>
+                <button class="btn btn-outline" id="btn-share2">🔗 Share Config</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- ══ VIVA GUIDE ══ -->
+    <section id="viva" class="section">
+        <div class="container">
+            <div class="section-header">
+                <div class="section-badge">Exam Prep</div>
+                <h2 class="section-title">Viva Preparation Guide</h2>
+                <p class="section-sub">Key questions your professor is likely to ask — with clear, precise answers.</p>
+            </div>
+            <!-- Search bar -->
+            <div class="viva-search"><input type="text" id="viva-filter" placeholder="🔍 Filter questions…"
+                    class="search-input" /></div>
+            <div class="viva-grid" id="viva-grid">
+                <div class="viva-card reveal" data-q="why does dma win for large data transfers">
+                    <div class="viva-num">Q1</div>
+                    <div class="viva-q">Why does DMA win for large data transfers?</div>
+                    <div class="viva-a">DMA removes the CPU from the data path entirely using <em>bus mastering</em>.
+                        The CPU only pays a one-time <strong>setup cost</strong> and handles a single <strong>completion
+                            interrupt</strong> — unlike Interrupt I/O which pays ISR overhead <em>every block</em>.
+                    </div>
+                </div>
+                <div class="viva-card reveal" data-q="why is polling cpu utilization 100">
+                    <div class="viva-num">Q2</div>
+                    <div class="viva-q">Why is Polling CPU utilization exactly 100%?</div>
+                    <div class="viva-a">During polling the CPU executes: <code>while (status != READY) check();</code> —
+                        it cannot execute any other instruction. This <em>busy-wait</em> loop consumes 100% of CPU
+                        cycles reading a status register.</div>
+                </div>
+                <div class="viva-card reveal" data-q="when should you choose interrupt over dma">
+                    <div class="viva-num">Q3</div>
+                    <div class="viva-q">When should you choose Interrupt over DMA?</div>
+                    <div class="viva-a">When transferring <em>below the break-even point</em>:
+                        <code>N_break = ceil(DMA_setup / ISR_per_block)</code>. For tiny transfers, DMA's fixed setup
+                        cost exceeds the cumulative ISR overhead of Interrupt I/O.</div>
+                </div>
+                <div class="viva-card reveal" data-q="what overhead does each isr introduce context switch">
+                    <div class="viva-num">Q4</div>
+                    <div class="viva-q">What overhead does each ISR introduce?</div>
+                    <div class="viva-a">(1) <strong>Entry</strong> — save CPU registers to stack (~100 cycles) · (2)
+                        <strong>Body</strong> — copy data to memory · (3) <strong>Exit</strong> — restore registers
+                        (~100 cycles). This <em>context-switch overhead</em> accumulates once per block.</div>
+                </div>
+                <div class="viva-card reveal" data-q="what is cycle stealing dma bus">
+                    <div class="viva-num">Q5</div>
+                    <div class="viva-q">What is cycle stealing in DMA?</div>
+                    <div class="viva-a">The DMA controller becomes <em>bus master</em> during transfer. It
+                        <em>steals</em> bus cycles from the CPU to move data. The CPU may briefly stall waiting for the
+                        bus, but otherwise executes freely from cache.</div>
+                </div>
+                <div class="viva-card reveal" data-q="break even formula calculation math">
+                    <div class="viva-num">Q6</div>
+                    <div class="viva-q">Calculate the break-even point mathematically.</div>
+                    <div class="viva-a">
+                        <code>ISR_per_block = Entry + Body + Exit</code><br /><code>DMA_total = DMA_Setup + Completion_IRQ</code><br />DMA
+                        wins when: <code>N × ISR_per_block &gt; DMA_total</code><br />Break-even:
+                        <code>N_break = ⌈ DMA_total / ISR_per_block ⌉</code></div>
+                </div>
+                <div class="viva-card reveal" data-q="what is throughput formula mbps">
+                    <div class="viva-num">Q7</div>
+                    <div class="viva-q">How is throughput calculated?</div>
+                    <div class="viva-a"><code>Throughput = Total_Bytes / Transfer_Time</code><br />Polling transfers
+                        with CPU in the critical path so effective throughput ≤ device speed. DMA achieves near-peak
+                        device throughput since the CPU never bottlenecks the transfer.</div>
+                </div>
+                <div class="viva-card reveal" data-q="what is cpu utilization overhead cycles">
+                    <div class="viva-num">Q8</div>
+                    <div class="viva-q">How is CPU utilization calculated?</div>
+                    <div class="viva-a"><code>CPU_Util = (Busy_Cycles / Total_Cycles) × 100%</code><br />For Polling:
+                        all cycles are busy. For Interrupt: only ISR cycles are busy. For DMA: only setup + completion
+                        IRQ cycles are busy — typically &lt;1% of total.</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ══ FOOTER ══ -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-row">
+                <div>
+                    <div class="footer-logo">⚡ I/O Techniques Simulator</div>
+                    <div class="footer-sub">Computer Architecture Project · 2026</div>
+                </div>
+                <div class="footer-links">
+                    <a href="#theory">Theory</a>
+                    <a href="#flowcharts">Flowcharts</a>
+                    <a href="#simulator">Simulator</a>
+                    <a href="#results">Results</a>
+                    <a href="#viva">Viva Guide</a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                Built with HTML · CSS · JavaScript · Chart.js &nbsp;|&nbsp; Hosted on GitHub Pages
+                &nbsp;|&nbsp; <a href="#" id="footer-shortcuts">Keyboard shortcuts</a>
+            </div>
+        </div>
+    </footer>
+
+    <button class="back-to-top" id="back-to-top">↑</button>
+
+    <script src="simulation.js"></script>
+</body>
+
+</html>
